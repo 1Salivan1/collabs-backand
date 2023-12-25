@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
 import express from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
-import { Request, Response } from "express";
-import { postValidation, userValidation } from "./validations/validations";
-import { validationResult } from "express-validator";
-import UserModel from "./models/user";
+import { userValidation, postValidation } from "./validations/validations";
+import { checkAuth } from "./middleware/checkAuth";
+import { register, login, getMe } from "./controllers/UserController";
+import {
+  createProject,
+  deleteProject,
+  updateProject,
+} from "./controllers/ProjectController";
 
 const app = express();
 const port = 5000;
@@ -33,88 +35,10 @@ const start = async () => {
 
 start();
 
-app.post(
-  "/auth/registration",
-  userValidation,
-  async (req: Request, res: Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json(errors.array());
-      }
-      let user = await UserModel.findOne({ email: req.body.email });
-      if (user) {
-        return res.status(400).send("That user already exisits!");
-      } else {
-        // Insert the new user if they do not exist yet
-        const { username, email, password, git, tags, about, socials } =
-          req.body;
-        const doc = new UserModel({
-          username,
-          email,
-          password,
-          git,
-          tags,
-          about,
-          socials,
-        });
+app.post("/auth/registration", userValidation, register);
+app.post("/auth/login", login);
+app.get("/auth/me", checkAuth, getMe);
 
-        const salt = await bcrypt.genSalt(10);
-        doc.password = await bcrypt.hash(doc.password, salt);
-        const user = await doc.save();
-
-        const token = jwt.sign(
-          {
-            _id: user._id,
-          },
-          "secret123",
-          {
-            expiresIn: "30d",
-          }
-        );
-
-        res.json({
-          token,
-          user: {
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            git: user.git,
-            tags: user.tags,
-            about: user.about,
-            socials: user.socials,
-          },
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: "Не уадлось зарегестрироваться",
-      });
-    }
-  }
-);
-
-app.post("/auth/login", async (req, res) => {
-  let user = await UserModel.findOne({ email: req.body.email });
-  if (!user) {
-    return res.status(400).send("Incorrect email or password.");
-  }
-
-  const validPassword = await bcrypt.compare(req.body.password, user.password);
-  if (!validPassword) {
-    return res.status(400).send("Incorrect email or password.");
-  }
-  const token = jwt.sign({ _id: user._id }, "secret123", { expiresIn: "30d" });
-  res.send(token);
-});
-
-// app.post("/posts/create", postValidation, (req: Request, res: Response) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json(errors.array());
-//   }
-//   res.json({
-//     success: true,
-//   });
-// });
+app.post("/projects/create", checkAuth, postValidation, createProject);
+app.delete("/projects/:id", checkAuth, deleteProject);
+app.patch("/projects/:id", checkAuth, postValidation, updateProject);

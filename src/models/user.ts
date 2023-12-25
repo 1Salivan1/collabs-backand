@@ -29,6 +29,18 @@ const userSchema = new Schema({
     type: Array,
     required: true,
   },
+  projects: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+      },
+    ],
+    default: [],
+  },
+  avatarUrl: {
+    type: String,
+  },
 });
 
 export default mongoose.model("User", userSchema);

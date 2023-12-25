@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
-const postSchema = new Schema({
+const projectSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -22,6 +22,11 @@ const postSchema = new Schema({
     type: Array,
     required: true,
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
 });
 
-module.exports = mongoose.model("Post", postSchema);
+export default mongoose.model("Project", projectSchema);
