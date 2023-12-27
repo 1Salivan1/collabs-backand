@@ -4,6 +4,40 @@ import { AuthRequest } from "../types/types";
 import ProjectModel from "../models/project";
 import UserModel from "../models/user";
 
+export const getAllProjects = async (req: Request, res: Response) => {
+  try {
+    const allProjects = await ProjectModel.find();
+    res.json({
+      projects: allProjects,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Произошла ошибка при получении проектов",
+    });
+  }
+};
+
+export const getProject = async (req: Request, res: Response) => {
+  try {
+    const project = await ProjectModel.findById(req.params.id);
+    res.json({
+      project: project,
+    });
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Проект не найден",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Произошла ошибка при получении проекта",
+    });
+  }
+};
+
 export const createProject = async (req: AuthRequest, res: Response) => {
   try {
     const { title, tags, text, needs, socials } = req.body;

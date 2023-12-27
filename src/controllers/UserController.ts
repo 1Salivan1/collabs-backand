@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import UserModel from "../models/user";
+import { SECRET } from "../config";
 import { validationResult } from "express-validator";
 import { Request, Response } from "express";
-import UserModel from "../models/user";
 import { AuthRequest } from "../types/types";
 
 export const register = async (req: Request, res: Response) => {
@@ -60,7 +61,7 @@ export const login = async (req: Request, res: Response) => {
   if (!validPassword) {
     return res.status(400).send("Incorrect email or password.");
   }
-  const token = jwt.sign({ _id: user._id }, "secret123", { expiresIn: "30d" });
+  const token = jwt.sign({ _id: user._id }, SECRET, { expiresIn: "30d" });
   res.send(token);
 };
 
