@@ -13,6 +13,7 @@ import {
   getAllProjects,
   getProject,
 } from "./controllers/ProjectController";
+import pool from "./db";
 
 const app = express();
 const port = 5000;
@@ -21,15 +22,11 @@ app.use(cors());
 
 const start = async () => {
   try {
-    // mongoose
-    //   .connect(DB_URL)
-    //   .then(() => {
-    //     console.log("DB ok");
-    //   })
-    //   .catch((err) => console.log("DB error", err));
-
     app.listen(port, () => {
       console.log(`App listening on port ${port}`);
+    });
+    pool.connect().then(() => {
+      console.log("Connected to PostgreSQL database!");
     });
   } catch (error) {
     console.log(error);

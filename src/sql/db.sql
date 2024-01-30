@@ -12,6 +12,7 @@ create TABLE users(
 create TABLE projects(
     id SERIAL PRIMARY KEY,
     title VARCHAR(200),
+    tags VARCHAR[],
     text VARCHAR(3000),
     needs VARCHAR[],
     socials VARCHAR[],

@@ -3,10 +3,11 @@ import { Request, Response } from "express";
 import { AuthRequest } from "../types/types";
 import ProjectModel from "../models/project";
 import UserModel from "../models/user";
+import pool from "../db";
 
 export const getAllProjects = async (req: Request, res: Response) => {
   try {
-    const allProjects = await ProjectModel.find();
+    const allProjects = await pool.query(`SELECT * FROM projects`);
     res.json({
       projects: allProjects,
     });
@@ -20,7 +21,9 @@ export const getAllProjects = async (req: Request, res: Response) => {
 
 export const getProject = async (req: Request, res: Response) => {
   try {
-    const project = await ProjectModel.findById(req.params.id);
+    const project = await pool.query(`SELECT * FROM projects WHERE id = $1`, [
+      req.body.id,
+    ]);
     res.json({
       project: project,
     });
@@ -40,25 +43,20 @@ export const getProject = async (req: Request, res: Response) => {
 
 export const createProject = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, tags, text, needs, socials } = req.body;
-    const doc = new ProjectModel({
-      title,
-      tags,
-      text,
-      needs,
-      socials,
-      user: req.userId,
-    });
-
-    const project = await doc.save();
-
-    await UserModel.findByIdAndUpdate(
+    const query = `INSERT INTO projects (title, tags, text, needs, socials, creator_id) VALUES ($1, $2, $3, $4, $5, $6)`;
+    const values = [
+      req.body.title,
+      req.body.tags,
+      req.body.text,
+      req.body.needs,
+      req.body.socials,
       req.userId,
-      { $push: { projects: project._id } },
-      { new: true }
-    );
+    ];
 
-    res.json(project);
+    const result = await pool.query(query, values);
+    const project = result.rows[0];
+
+    res.json({ success: true, message: "Проект успешно создан" });
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -69,23 +67,17 @@ export const createProject = async (req: AuthRequest, res: Response) => {
 
 export const deleteProject = async (req: AuthRequest, res: Response) => {
   try {
-    const deletedProject = await ProjectModel.findByIdAndDelete(req.params.id);
-    if (deletedProject) {
-      console.log(req.userId);
-      await UserModel.findByIdAndUpdate(
-        req.userId,
-        { $pull: { projects: req.params.id } },
-        { new: true }
-      );
+    const deletedProject = await pool.query(
+      `DELETE FROM projects WHERE id = $1 RETURNING *`,
+      [req.params.id]
+    );
 
+    if (deletedProject.rows.length === 0) {
+      res.json({ success: false, message: "Проект не найден" });
+    } else {
       res.json({
         success: true,
         message: "Проект успешно удален",
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "Проект не найден",
       });
     }
   } catch (error) {
