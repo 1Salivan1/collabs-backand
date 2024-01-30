@@ -21,12 +21,12 @@ app.use(cors());
 
 const start = async () => {
   try {
-    mongoose
-      .connect(DB_URL)
-      .then(() => {
-        console.log("DB ok");
-      })
-      .catch((err) => console.log("DB error", err));
+    // mongoose
+    //   .connect(DB_URL)
+    //   .then(() => {
+    //     console.log("DB ok");
+    //   })
+    //   .catch((err) => console.log("DB error", err));
 
     app.listen(port, () => {
       console.log(`App listening on port ${port}`);

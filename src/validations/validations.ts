@@ -11,12 +11,12 @@ export const userValidation = [
     max: 3000,
   }),
   body("git", "Ссылка не валидна").isURL().optional(),
-  body("tags", "Укажите теги").isLength({ min: 1 }),
+  body("tags", "Укажите теги").isArray({ min: 1 }),
   body("about", "Укажите подробную информацию о себе").isString().isLength({
     min: 20,
     max: 2000,
   }),
-  body("socials", "Укажите контакты для связи с вами").isLength({ min: 1 }),
+  body("socials", "Укажите контакты для связи с вами").isArray({ min: 1 }),
   body("avatarUrl", "Ссылка на аватар не валидна").isURL().optional(),
 ];
 
