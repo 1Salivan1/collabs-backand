@@ -1,7 +1,6 @@
+require("dotenv").config();
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import UserModel from "../models/user";
-import { SECRET } from "../config";
 import { validationResult } from "express-validator";
 import { Request, Response } from "express";
 import { AuthRequest } from "../types/types";
@@ -87,7 +86,9 @@ export const login = async (req: Request, res: Response) => {
   if (!validPassword) {
     return res.status(400).json({ msg: "Неверная почта или пароль" });
   }
-  const token = jwt.sign({ _id: user.id }, SECRET, { expiresIn: "30d" });
+  const token = jwt.sign({ _id: user.id }, process.env.SECRET || "", {
+    expiresIn: "30d",
+  });
   res.send(token);
 };
 

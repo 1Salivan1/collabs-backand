@@ -1,8 +1,6 @@
-import mongoose from "mongoose";
 import express from "express";
 import cors from "cors";
 
-import { DB_URL } from "./config";
 import { userValidation, postValidation } from "./validations/validations";
 import { checkAuth } from "./middleware/checkAuth";
 import { register, login, getMe } from "./controllers/UserController";

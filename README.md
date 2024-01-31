@@ -1,8 +1,11 @@
 # How to start
 
-To start, you need to create a Mongodb cloud storage, since at the moment the solution has been created using it.
+## 1. Create database
 
-### 1. Install dependencies
+First you need to create a PostgreSQL database.
+Queries to create tables for the database are stored in `src/sql/db.sql`.
+
+## 2. Install dependencies
 
 For npm:
 `npm install`;
@@ -10,23 +13,20 @@ For npm:
 For yarn:
 `yarn install`.
 
-### 2. Create config file
+## 3. Create .env file
 
-Create file `config.ts` in folder `src` with next information:
-
-1. Link to connect to MongoDB cloud storage;
-2. Secret for jwt.
-
-Example config file:
+Example `.env` file:
 
 ```
-export const DB_URL = "mongodb+srv://qwe:123456@cluster0.l9skhwe.mongodb.net/qwe?retryWrites=true&w=majority";
-export const SECRET = "secret123";
+SECRET=secret_key_for_jwt
+USER=db_user
+PASSWORD=db_password
+HOST=db_host
+PORT=db_port
+DATABASE=db_name
 ```
 
-The dependencies in the remaining files are specified for these names specifically for this path.
-
-### 3. Let's launch the project
+## 4. Let's launch the project
 
 Write a command `npm run dev` or `yarn run dev` to run the project in development mode.
 

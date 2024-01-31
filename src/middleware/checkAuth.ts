@@ -1,5 +1,5 @@
+import "dotenv/config";
 import { Request, Response, NextFunction } from "express";
-import { SECRET } from "../config";
 import { AuthRequest } from "../types/types";
 import jwt from "jsonwebtoken";
 
@@ -16,7 +16,10 @@ export const checkAuth = (
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, SECRET) as TokenPayload;
+      const decoded = jwt.verify(
+        token,
+        process.env.SECRET || ""
+      ) as TokenPayload;
 
       req.userId = decoded._id;
       next();

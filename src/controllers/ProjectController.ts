@@ -1,8 +1,5 @@
-import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { AuthRequest } from "../types/types";
-import ProjectModel from "../models/project";
-import UserModel from "../models/user";
 import pool from "../db";
 
 export const getAllProjects = async (req: Request, res: Response) => {
@@ -54,7 +51,6 @@ export const createProject = async (req: AuthRequest, res: Response) => {
     ];
 
     const result = await pool.query(query, values);
-    const project = result.rows[0];
 
     res.json({ success: true, message: "Проект успешно создан" });
   } catch (err) {
@@ -91,35 +87,36 @@ export const deleteProject = async (req: AuthRequest, res: Response) => {
 
 export const updateProject = async (req: Request, res: Response) => {
   try {
-    const updatedPost = await ProjectModel.findByIdAndUpdate(
+    const query =
+      "UPDATE projects SET title = $1, tags = $2, text = $3, needs = $4, socials = $5 WHERE id = $6 RETURNING *";
+    const values = [
+      req.body.title,
+      req.body.tags,
+      req.body.text,
+      req.body.needs,
+      req.body.socials,
       req.params.id,
-      {
-        $set: {
-          title: req.body.title,
-          tags: req.body.tags,
-          text: req.body.text,
-          needs: req.body.needs,
-          socials: req.body.socials,
-        },
-      },
-      { new: true }
-    );
-    if (updatedPost) {
+    ];
+
+    const result = await pool.query(query, values);
+
+    if (result.rowCount > 0) {
+      const updatedProject = result.rows[0];
       res.json({
         success: true,
-        post: updatedPost,
+        project: updatedProject,
       });
     } else {
       res.status(404).json({
         success: false,
-        message: "Пост не найден",
+        message: "Проект не найден",
       });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: "Произошла ошибка при обновлении поста",
+      message: "Произошла ошибка при обновлении проекта",
     });
   }
 };
