@@ -19,17 +19,17 @@ export const getAllProjects = async (req: Request, res: Response) => {
 export const getProject = async (req: Request, res: Response) => {
   try {
     const project = await pool.query(`SELECT * FROM projects WHERE id = $1`, [
-      req.body.id,
+      req.params.id,
     ]);
-    res.json({
-      project: project,
-    });
-    if (!project) {
+    if (project.rowCount === 0) {
       return res.status(404).json({
         success: false,
         message: "Проект не найден",
       });
     }
+    res.json({
+      project: project.rows,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -117,6 +117,32 @@ export const updateProject = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Произошла ошибка при обновлении проекта",
+    });
+  }
+};
+
+export const getMyProject = async (req: AuthRequest, res: Response) => {
+  try {
+    const query = await pool.query(
+      `SELECT * FROM projects WHERE creator_id = $1`,
+      [req.userId]
+    );
+
+    if (query.rowCount === 0) {
+      return res.status(404).json({
+        status: "false",
+        message: "Проекты не найдены",
+      });
+    }
+
+    return res.status(200).json({
+      projects: query.rows,
+    });
+  } catch (error) {
+    console.error("Ошибка при выполнении запроса:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Внутренняя ошибка сервера",
     });
   }
 };

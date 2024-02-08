@@ -10,6 +10,7 @@ import {
   updateProject,
   getAllProjects,
   getProject,
+  getMyProject,
 } from "./controllers/ProjectController";
 import pool from "./db";
 
@@ -39,6 +40,7 @@ app.get("/auth/me", checkAuth, getMe);
 
 app.get("/projects/:id", getProject);
 app.get("/projects", getAllProjects);
+app.get("/my_projects", checkAuth, getMyProject);
 app.post("/projects", checkAuth, postValidation, createProject);
 app.delete("/projects/:id", checkAuth, deleteProject);
 app.patch("/projects/:id", checkAuth, postValidation, updateProject);
