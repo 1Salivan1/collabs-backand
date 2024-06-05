@@ -1,3 +1,11 @@
+# About project
+
+Collabs - is a platform for finding people for non-profit projects. It is ideal for gaining experience in collaborative work, as well as startups without funding.
+
+This project is the backend for the collabs service.
+
+[Front-end of project](https://github.com/1Salivan1/collabs)
+
 # How to start
 
 ## 1. Create database
