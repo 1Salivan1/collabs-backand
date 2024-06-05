@@ -8,11 +8,12 @@ import {
   createProject,
   deleteProject,
   updateProject,
-  getAllProjects,
-  getProject,
+  getProjects,
+  getOneProject,
   getMyProject,
 } from "./controllers/ProjectController";
 import pool from "./db";
+import { getAllUsers } from "./controllers/OtherUsersController";
 
 const app = express();
 const port = 5000;
@@ -38,9 +39,11 @@ app.post("/auth/registration", userValidation, register);
 app.post("/auth/login", login);
 app.get("/auth/me", checkAuth, getMe);
 
-app.get("/projects/:id", getProject);
-app.get("/projects", getAllProjects);
+app.get("/projects/:id", getOneProject);
+app.get("/projects", getProjects);
 app.get("/my_projects", checkAuth, getMyProject);
 app.post("/projects", checkAuth, postValidation, createProject);
 app.delete("/projects/:id", checkAuth, deleteProject);
 app.patch("/projects/:id", checkAuth, postValidation, updateProject);
+
+app.get("/users", getAllUsers);

@@ -1,8 +1,8 @@
 import { body } from "express-validator";
 
 export const userValidation = [
-  body("username", "Имя должно быть не менее 3 символов").isString().isLength({
-    min: 3,
+  body("username", "Имя должно быть не менее 2 символов").isString().isLength({
+    min: 2,
     max: 200,
   }),
   body("email", "Почта не валидна").isEmail().isLength({ min: 3, max: 200 }),
@@ -10,13 +10,25 @@ export const userValidation = [
     min: 5,
     max: 3000,
   }),
-  body("git", "Ссылка не валидна").isURL().optional(),
   body("tags", "Укажите теги").isArray({ min: 1 }),
   body("about", "Укажите подробную информацию о себе").isString().isLength({
     min: 20,
     max: 2000,
   }),
-  body("socials", "Укажите контакты для связи с вами").isArray({ min: 1 }),
+  body("socials").custom((value, { req }) => {
+    if (!req.body.telegram && !req.body.linkedin && !req.body.discord) {
+      throw new Error("Укажите хотя бы один контакт для связи");
+    }
+    return true;
+  }),
+  body("telegram", "Ссылка на Telegram не валидна")
+    .if((value, { req }) => req.body.telegram !== "")
+    .isURL()
+    .optional(),
+  body("linkedin", "Ссылка на Linkedin не валидна")
+    .if((value, { req }) => req.body.linkedin !== "")
+    .isURL()
+    .optional(),
   body("avatarUrl", "Ссылка на аватар не валидна").isURL().optional(),
 ];
 
@@ -25,13 +37,26 @@ export const postValidation = [
     min: 5,
     max: 100,
   }),
-  body("tags", "Укажите теги").isLength({ min: 1 }),
+  body("tags", "Укажите теги").isArray({ min: 1 }),
   body("text", "Укажите подробную информацию о вашем проекте")
     .isString()
     .isLength({
       min: 20,
-      max: 3000,
+      max: 5000,
     }),
-  body("needs", "Укажите кто вам нужен").isLength({ min: 1 }),
-  body("socials", "Укажите контакты для связи с вами").isLength({ min: 1 }),
+  body("needs", "Укажите кто вам нужен").isArray({ min: 1 }),
+  body("socials").custom((value, { req }) => {
+    if (!req.body.telegram && !req.body.linkedin && !req.body.discord) {
+      throw new Error("Укажите хотя бы один контакт для связи");
+    }
+    return true;
+  }),
+  body("telegram", "Ссылка на Telegram не валидна")
+    .if((value, { req }) => req.body.telegram !== "")
+    .isURL()
+    .optional(),
+  body("linkedin", "Ссылка на Linkedin не валидна")
+    .if((value, { req }) => req.body.linkedin !== "")
+    .isURL()
+    .optional(),
 ];

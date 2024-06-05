@@ -1,13 +1,25 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../types/types";
 import pool from "../db";
+import { validationResult } from "express-validator";
 
-export const getAllProjects = async (req: Request, res: Response) => {
+export const getProjects = async (req: Request, res: Response) => {
   try {
-    const allProjects = await pool.query(`SELECT * FROM projects`);
-    res.json({
-      projects: allProjects,
-    });
+    if (req.query.page) {
+      const page: number = Number(req.query.page);
+      const numberOfProjects = String(page * 10);
+      const projectsQuery = `SELECT * FROM projects ORDER BY id LIMIT 10 OFFSET $1`;
+      const projects = await pool.query(projectsQuery, [numberOfProjects]);
+
+      res.json({
+        projects: projects.rows,
+      });
+    } else {
+      const allProjects = await pool.query(`SELECT * FROM projects`);
+      res.json({
+        projects: allProjects.rows,
+      });
+    }
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -16,7 +28,7 @@ export const getAllProjects = async (req: Request, res: Response) => {
   }
 };
 
-export const getProject = async (req: Request, res: Response) => {
+export const getOneProject = async (req: Request, res: Response) => {
   try {
     const project = await pool.query(`SELECT * FROM projects WHERE id = $1`, [
       req.params.id,
@@ -27,9 +39,7 @@ export const getProject = async (req: Request, res: Response) => {
         message: "Проект не найден",
       });
     }
-    res.json({
-      project: project.rows,
-    });
+    res.json(project.rows[0]);
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -40,14 +50,21 @@ export const getProject = async (req: Request, res: Response) => {
 
 export const createProject = async (req: AuthRequest, res: Response) => {
   try {
-    const query = `INSERT INTO projects (title, tags, text, needs, socials, creator_id) VALUES ($1, $2, $3, $4, $5, $6)`;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json(errors.array());
+    }
+
+    const query = `INSERT INTO projects (title, tags, text, needs, creator_id, telegram, discord, linkedin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
     const values = [
       req.body.title,
       req.body.tags,
       req.body.text,
       req.body.needs,
-      req.body.socials,
       req.userId,
+      req.body.telegram,
+      req.body.discord,
+      req.body.linkedin,
     ];
 
     const result = await pool.query(query, values);

@@ -19,7 +19,7 @@ export const register = async (req: Request, res: Response) => {
 
     if (userEmail.rows.length > 0) {
       return res.status(400).json({
-        msg: "Пользователь с таким именем или почтой уже существует",
+        msg: "Пользователь с такой именем или почтой уже существует",
       });
     }
     // Проверка username
@@ -38,8 +38,8 @@ export const register = async (req: Request, res: Response) => {
     const password = await bcrypt.hash(req.body.password, salt);
 
     const query = `
-      INSERT INTO users (username, email, password, tags, about, socials)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO users (username, email, password, tags, about, avatarurl, telegram, linkedin, discord)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *`;
 
     const values = [
@@ -48,21 +48,30 @@ export const register = async (req: Request, res: Response) => {
       password,
       req.body.tags,
       req.body.about,
-      req.body.socials,
+      req.body.avatarurl,
+      req.body.telegram,
+      req.body.linkedin,
+      req.body.discord,
     ];
 
     const result = await pool.query(query, values);
     const user = result.rows[0];
+    const token = jwt.sign({ _id: user.id }, process.env.SECRET || "", {
+      expiresIn: "30d",
+    });
 
     res.json({
       user: {
-        _id: user._id,
+        token: token,
+        _id: user.id,
         username: user.username,
         email: user.email,
-        git: user.git,
         tags: user.tags,
         about: user.about,
-        socials: user.socials,
+        avatarurl: user.avatarurl,
+        telegram: user.telegram,
+        linkedin: user.linkedin,
+        discord: user.discord,
       },
     });
   } catch (error) {
@@ -77,7 +86,8 @@ export const login = async (req: Request, res: Response) => {
   let userResult = await pool.query(`SELECT * FROM users WHERE email = $1`, [
     req.body.email,
   ]);
-  if (userResult.rows.length < 0) {
+
+  if (userResult.rows.length <= 0) {
     return res.status(400).json({ msg: "Неверная почта или пароль" });
   }
 
@@ -114,7 +124,9 @@ export const getMe = async (req: AuthRequest, res: Response) => {
         git: user.git,
         tags: user.tags,
         about: user.about,
-        socials: user.socials,
+        telegram: user.telegram,
+        linkedin: user.linkedin,
+        discord: user.discord,
       },
     });
   } catch (error) {
